@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuarios con Búsqueda</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .error {
+            color: red;
+            font-size: 0.8em;
+            margin-top: -8px;
+        }
+        
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        li {
+            padding: 8px;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .delete-btn {
+            background-color: #f44336;
+            padding: 2px 6px;
+            font-size: 0.8em;
+        }
+        
+        .total {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .search-container {
+            margin-bottom: 15px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Registro de Usuarios</h1>
+
+    <form id="registroForm">
+        <div>
+            <input type="text" id="nombre" placeholder="Nombre" required>
+            <div id="nombreError" class="error"></div>
+        </div>
+
+        <div>
+            <input type="email" id="email" placeholder="Email" required>
+            <div id="emailError" class="error"></div>
+        </div>
+
+        <div>
+            <input type="number" id="edad" placeholder="Edad" min="1" required>
+            <div id="edadError" class="error"></div>
+        </div>
+
+        <button type="submit">Registrar</button>
+    </form>
+
+    <div class="search-container">
+        <input type="text" id="buscador" class="search-input" placeholder="Buscar usuarios por nombre...">
+    </div>
+
+    <h2>Usuarios Registrados</h2>
+    <ul id="listaUsuarios"></ul>
+    <div class="total">Total de usuarios: <span id="totalUsuarios">0</span></div>
+
+    <script>
+        // Array para almacenar usuarios
+        const usuarios = [];
+
+        // Elementos del DOM
+        const form = document.getElementById('registroForm');
+        const listaUsuarios = document.getElementById('listaUsuarios');
+        const totalUsuarios = document.getElementById('totalUsuarios');
+        const buscador = document.getElementById('buscador');
+
+        // Función para validar campos
+        function validarCampos() {
+            let valido = true;
+
+            // Validar nombre
+            const nombre = document.getElementById('nombre').value.trim();
+            if (nombre === '') {
+                document.getElementById('nombreError').textContent = 'El nombre es requerido';
+                valido = false;
+            } else {
+                document.getElementById('nombreError').textContent = '';
+            }
+
+            // Validar email
+            const email = document.getElementById('email').value.trim();
+            if (email === '') {
+                document.getElementById('emailError').textContent = 'El email es requerido';
+                valido = false;
+            } else if (!email.includes('@')) {
+                document.getElementById('emailError').textContent = 'Ingrese un email válido';
+                valido = false;
+            } else {
+                document.getElementById('emailError').textContent = '';
+            }
+
+            // Validar edad
+            const edad = document.getElementById('edad').value;
+            if (edad === '' || edad <= 0) {
+                document.getElementById('edadError').textContent = 'La edad debe ser un número positivo';
+                valido = false;
+            } else {
+                document.getElementById('edadError').textContent = '';
+            }
+
+            return valido;
+        }
+
+        // Función para mostrar usuarios (con filtrado opcional)
+        function mostrarUsuarios(usuariosAMostrar = usuarios) {
+            listaUsuarios.innerHTML = '';
+
+            usuariosAMostrar.forEach((usuario, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${usuario.nombre} - ${usuario.email} - ${usuario.edad} años</span>
+                    <button class="delete-btn" data-index="${usuario.originalIndex || index}">Eliminar</button>
+                `;
+                listaUsuarios.appendChild(li);
+            });
+
+            // Actualizar contador
+            totalUsuarios.textContent = usuarios.length;
+
+            // Agregar event listeners a los botones de eliminar
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = e.target.getAttribute('data-index');
+                    usuarios.splice(index, 1);
+                    mostrarUsuarios();
+
+                    // Si hay texto de búsqueda, actualizar la búsqueda
+                    if (buscador.value) {
+                        buscarUsuarios();
+                    }
+                });
+            });
+        }
+
+        // Función para buscar usuarios
+        function buscarUsuarios() {
+            const busqueda = buscador.value.toLowerCase();
+            const usuariosFiltrados = usuarios
+                .map((user, index) => ({...user,
+                    originalIndex: index
+                }))
+                .filter(user => user.nombre.toLowerCase().includes(busqueda));
+
+            mostrarUsuarios(usuariosFiltrados);
+        }
+
+        // Event listener para el formulario
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (validarCampos()) {
+                // Obtener valores del formulario
+                const nombre = document.getElementById('nombre').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const edad = document.getElementById('edad').value;
+
+                // Crear objeto usuario
+                const usuario = {
+                    nombre,
+                    email,
+                    edad
+                };
+
+                // Agregar al array
+                usuarios.push(usuario);
+
+                // Mostrar todos los usuarios
+                mostrarUsuarios();
+
+                // Limpiar el formulario
+                form.reset();
+            }
+        });
+
+        // Event listener para el buscador
+        buscador.addEventListener('input', buscarUsuarios);
+    </script>
+</body>
+
+</html>
