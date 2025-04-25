@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Texto</title>
+    <style>
+        #resultado {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            color: blue;
+            /* Texto en azul */
+        }
+        
+        .contador {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Escribe tu texto:</h2>
+    <textarea id="textoUsuario" rows="5" cols="50" placeholder="Escribe algo aquí..."></textarea>
+    <div class="contador">Caracteres: <span id="contador">0</span></div>
+    <br>
+    <button id="aplicarBtn">Aplicar</button>
+    <div id="resultado"></div>
+
+    <script>
+        // Elementos del DOM
+        const textarea = document.getElementById('textoUsuario');
+        const aplicarBtn = document.getElementById('aplicarBtn');
+        const resultadoDiv = document.getElementById('resultado');
+        const contadorSpan = document.getElementById('contador');
+
+        // Contador de caracteres en tiempo real
+        textarea.addEventListener('input', function() {
+            contadorSpan.textContent = this.value.length;
+        });
+
+        // Botón Aplicar: muestra el texto en el div resultado
+        aplicarBtn.addEventListener('click', function() {
+            const texto = textarea.value;
+            resultadoDiv.textContent = texto;
+        });
+    </script>
+</body>
+
+</html>
